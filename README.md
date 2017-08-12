@@ -59,8 +59,8 @@ sys     0m0.303s
 ## Screenshots
 1. OK example:
 
-![alt text](https://github.com/Tontonitch/check_ndrestart/blob/master/screenshots/example_ok_icingaweb2.PNG "Example ok icingaweb2")
+![alt text](screenshots/example_ok_icingaweb2.PNG)
 
 2. WARNING example:
 
-![alt text](https://github.com/Tontonitch/check_ndrestart/blob/master/screenshots/example_warning_icingaweb2.PNG "Example warning icingaweb2")
+![alt text](screenshots/example_warning_icingaweb2.PNG)
