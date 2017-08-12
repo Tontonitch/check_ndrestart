@@ -1,0 +1,18 @@
+name: check_ndrestart
+description: "file:///README.md"
+url: "https://github.com/Tontonitch/check_ndrestart"
+tags: 
+vendor: Linux
+target: Operating System
+type: Plugin
+license: gplv3
+releases: 
+  - 
+    name: 1.0
+    description: "1.0 Release"
+    files: 
+      - 
+        name: check_ndrestart.sh
+        url: "file:///check_ndrestart.sh"
+        description: "First release"
+        checksum: 9d4fb42369db62534134f079051eda5e
