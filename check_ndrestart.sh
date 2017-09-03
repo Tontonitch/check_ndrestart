@@ -75,7 +75,7 @@ print_help() {
 # 
 case `uname` in
         Linux ) LSBR_DISTRID=`lsb_release -i -s`
-                LSBR_DISTRRN=`lsb_release -r -s`
+                LSBR_DISTRRN=`lsb_release -r -s | cut -f1,2 -d'.'`
             ;;
         *)      echo "UNKNOWN: `uname` not yet supported by this plugin. Coming soon !"
                 exit $STATE_UNKNOWN
