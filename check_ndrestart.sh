@@ -162,3 +162,5 @@ if [ $STATUS -eq 1 ]; then
 else
     echo "OK: No processes need to be restarted, no reboot required";
 fi
+
+exit $STATUS
