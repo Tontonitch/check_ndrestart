@@ -51,6 +51,7 @@ NEEDSRVRESTART=""
 
 if [ ! -x $LSBRELEASE ]; then
         echo "UNKNOWN: lsb_release not found or is not executable by the nagios/icinga user."
+        echo "If the binary doesn't exist, you need to look for the package redhat-lsb-core."
         exit $STATE_UNKNOWN
 fi
 
