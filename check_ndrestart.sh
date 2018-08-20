@@ -19,6 +19,9 @@
 # HISTORY :
 #     Release   |     Date      |    Authors    |       Description
 # --------------+---------------+---------------+------------------------------------------
+#       1.1.1   |    20.08.18   | Y. Charton    | Add Fedora support, requirement check,
+#               |               |               | fix error code
+# --------------+---------------+---------------+------------------------------------------
 #       1.1     |    10.01.18   | Y. Charton    | Exclude list
 # --------------+---------------+---------------+------------------------------------------
 #       1.0     |    08.05.17   | Y. Charton    | Initial release
@@ -40,7 +43,7 @@ STATUS=$STATE_OK
 
 # Plugin variable description
 PROGNAME=$(basename $0)
-RELEASE="Revision 1.1"
+RELEASE="Revision 1.1.1"
 AUTHOR="by Yannick Charton"
 
 # Other variables
