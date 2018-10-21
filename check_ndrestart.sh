@@ -169,7 +169,7 @@ case $LSBR_DISTRID in
         fi
         ;;
     *)
-      echo "UNKNOWN: `uname` not yet supported by this plugin. Coming soon !"
+      echo "UNKNOWN: $LSBR_DISTRID not yet supported by this plugin. Coming soon !"
       exit $STATE_UNKNOWN
       ;;
 esac
