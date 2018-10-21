@@ -149,6 +149,13 @@ case $LSBR_DISTRID in
             fi
         fi
         ;;
+    XCP-ng | XenServer)
+        if [ -n "${EXCLUDE}" ]; then
+            NEEDSRVRESTART=$(sudo needs-restarting 2>&1 | egrep -v "${EXCLUDE}")
+        else
+            NEEDSRVRESTART=$(sudo needs-restarting 2>&1)
+        fi
+        ;;
     Fedora)
         if [ $(bc <<< "$LSBR_DISTRRN >= 28") -ne 0 ]; then
             NEEDREBOOT=$(needs-restarting -r 2>&1)
