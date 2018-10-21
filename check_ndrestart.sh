@@ -20,7 +20,7 @@
 #     Release   |     Date      |    Authors    |       Description
 # --------------+---------------+---------------+------------------------------------------
 #       1.1.2   |    22.10.18   | N. Lafont     | Add XCP-ng / XenServer support,
-#               |               |               | fix error message
+#               |               |               | fix error message, multiple dot version
 # --------------+---------------+---------------+------------------------------------------
 #       1.1.1   |    20.08.18   | Y. Charton    | Add Fedora support, requirement check,
 #               |               |               | fix error code
@@ -46,7 +46,7 @@ STATUS=$STATE_OK
 
 # Plugin variable description
 PROGNAME=$(basename $0)
-RELEASE="Revision 1.1.1"
+RELEASE="Revision 1.1.2"
 AUTHOR="by Yannick Charton"
 
 # Other variables
@@ -124,7 +124,7 @@ done
 # Distrib dependent commands
 case `uname` in
         Linux ) LSBR_DISTRID=`lsb_release -i -s`
-                LSBR_DISTRRN=`lsb_release -r -s`
+                LSBR_DISTRRN=`lsb_release -r -s | cut -d '.' -f 1-2`
             ;;
         *)      echo "UNKNOWN: `uname` not yet supported by this plugin. Coming soon !"
                 exit $STATE_UNKNOWN
