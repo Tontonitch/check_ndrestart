@@ -133,7 +133,7 @@ esac
 
 
 case $LSBR_DISTRID in
-    RedHatEnterpriseServer | CentOS)
+    RedHatEnterpriseServer | RedHatEnterprise | CentOS)
         if [ $(bc <<< "$LSBR_DISTRRN >= 7.3") -ne 0 ]; then
             NEEDREBOOT=$(needs-restarting -r 2>&1)
             RC_NEEDREBOOT=$?
