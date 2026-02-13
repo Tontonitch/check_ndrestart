@@ -19,6 +19,9 @@
 # HISTORY :
 #     Release   |     Date      |    Authors    |       Description
 # --------------+---------------+---------------+------------------------------------------
+#       1.1.3   |    13.02.26   | Y. Charton    | Added the "new" possible LSBR_DISTRIB 
+#               |               |               | variable value for RHEL
+# --------------+---------------+---------------+------------------------------------------
 #       1.1.2   |    22.10.18   | N. Lafont     | Add XCP-ng / XenServer support,
 #               |               |               | fix error message, multiple dot version
 # --------------+---------------+---------------+------------------------------------------
@@ -46,7 +49,7 @@ STATUS=$STATE_OK
 
 # Plugin variable description
 PROGNAME=$(basename $0)
-RELEASE="Revision 1.1.2"
+RELEASE="Revision 1.1.3"
 AUTHOR="by Yannick Charton"
 
 # Other variables
