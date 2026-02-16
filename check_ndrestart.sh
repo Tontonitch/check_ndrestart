@@ -60,12 +60,12 @@ NEEDREBOOT=""
 RC_NEEDREBOOT=0
 NEEDSRVRESTART=""
 
-if [ ! $(rpm -q yum-utils) ]; then
+if ! rpm -q yum-utils > /dev/null 2>&1; then
         echo "UNKNOWN: the required package yum-utils is not installed on this system".
         exit $STATE_UNKNOWN
 fi
 
-if [ ! $(rpm -q redhat-lsb-core) ]; then
+if ! rpm -q redhat-lsb-core > /dev/null 2>&1; then
         echo "UNKNOWN: the required package redhat-lsb-core is not installed on this system".
         exit $STATE_UNKNOWN
 fi
