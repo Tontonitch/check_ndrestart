@@ -19,6 +19,9 @@
 # HISTORY :
 #     Release   |     Date      |    Authors    |       Description
 # --------------+---------------+---------------+------------------------------------------
+#       1.2     |    16.02.26   | A. Koulouktsis| Various changes, binaries detection, 
+#               |               | Y. Charton    | removed package detection as distrib dependent
+# --------------+---------------+---------------+------------------------------------------
 #       1.1.4   |    16.02.26   | Y. Charton    | Added RockyLinux as supported distribution
 # --------------+---------------+---------------+------------------------------------------
 #       1.1.3   |    13.02.26   | Y. Charton    | Added the "new" possible LSBR_DISTRIB 
@@ -39,8 +42,10 @@
 #        see https://access.redhat.com/solutions/3317951 for an Oracle Clusterware process case
 # =========================================================================================
 
-# Paths to commands used in this script.  These may have to be modified to match your system setup.
-LSBRELEASE=/usr/bin/lsb_release
+# --- 1. VARIABLES ---
+
+# Find lsb_release (handles different paths across RHEL versions)
+LSBRELEASE=$(command -v lsb_release)
 
 # Nagios return codes
 STATE_OK=0
@@ -51,8 +56,8 @@ STATUS=$STATE_OK
 
 # Plugin variable description
 PROGNAME=$(basename $0)
-RELEASE="Revision 1.1.4"
-AUTHOR="by Yannick Charton"
+RELEASE="Revision 1.2"
+AUTHOR="by Yannick Charton, N. Lafont, A. Koulouktsis"
 
 # Other variables
 EXCLUDE=""
@@ -60,22 +65,22 @@ NEEDREBOOT=""
 RC_NEEDREBOOT=0
 NEEDSRVRESTART=""
 
-#if ! rpm -q yum-utils > /dev/null 2>&1; then
-#        echo "UNKNOWN: the required package yum-utils is not installed on this system".
-#        exit $STATE_UNKNOWN
-#fi
-#
-#if ! rpm -q redhat-lsb-core > /dev/null 2>&1; then
-#        echo "UNKNOWN: the required package redhat-lsb-core is not installed on this system".
-#        exit $STATE_UNKNOWN
-#fi
+# --- 2. REQUIREMENT CHECKS ---
 
-if [ ! -x $LSBRELEASE ]; then
-        echo "UNKNOWN: lsb_release not found or is not executable by the nagios/icinga user."
-        exit $STATE_UNKNOWN
+# Check for lsb_release binary
+if [ -z "$LSBRELEASE" ] || [ ! -x "$LSBRELEASE" ]; then
+    echo "UNKNOWN: lsb_release not found or is not executable by the nagios/icinga user."
+    exit $STATE_UNKNOWN
 fi
 
-# Functions plugin usage
+# Check for bc (required for version math)
+if ! command -v bc >/dev/null 2>&1; then
+    echo "UNKNOWN: 'bc' command not found. Please install the 'bc' package."
+    exit $STATE_UNKNOWN
+fi
+
+# --- 3. FUNCTIONS ---
+
 print_release() {
     echo "$RELEASE $AUTHOR"
 }
@@ -83,7 +88,7 @@ print_release() {
 print_usage() {
     echo ""
     echo "$PROGNAME $RELEASE - Nagios plugin (script) to if the system needs to be restarted"
-        echo "or if some processes/services need to be restarted following some package updates."
+    echo "or if some processes/services need to be restarted following some package updates."
     echo ""
     echo "Usage: check_ndrestart.sh [-e service_to_exclude] [-e service_to_exclude]"
     echo ""
@@ -92,20 +97,13 @@ print_usage() {
     echo ""
 }
 
-print_help() {
-    print_usage
-    echo ""
-    echo "This plugin will check if the system needs to be restarted or if some"
-    echo "processes/services need to be restarted following some package updates."
-    echo ""
-    exit 0
-}
+# --- 4. PARAMETER PARSING ---
 
 # Parse parameters
 while [ $# -gt 0 ]; do
     case "$1" in
         -h | --help)
-            print_help
+            print_usage
             exit $STATE_OK
             ;;
         -v | --version)
@@ -115,7 +113,7 @@ while [ $# -gt 0 ]; do
         -e | --exclude)
             shift
             if [ -n "${EXCLUDE}" ]; then EXCLUDE="${EXCLUDE}|"; fi
-                        EXCLUDE="${EXCLUDE}$1"
+            EXCLUDE="${EXCLUDE}$1"
             ;;
         *)  echo "Unknown argument: $1"
             print_usage
@@ -125,33 +123,40 @@ while [ $# -gt 0 ]; do
 shift
 done
 
+# --- 5. OS RELEASE DETECTION ---
 
 # Distrib dependent commands
 case `uname` in
         Linux ) LSBR_DISTRID=`lsb_release -i -s`
-                LSBR_DISTRRN=`lsb_release -r -s | cut -d '.' -f 1-2`
+                # Get major.minor version
+				LSBR_DISTRRN=`lsb_release -r -s | cut -d '.' -f 1-2`
             ;;
         *)      echo "UNKNOWN: `uname` not yet supported by this plugin. Coming soon !"
                 exit $STATE_UNKNOWN
             ;;
 esac
 
+# --- 6. EXECUTION LOGIC ---
 
 case $LSBR_DISTRID in
-    RedHatEnterpriseServer | RedHatEnterprise | CentOS | RockyLinux)
+    RedHatEnterpriseServer | RedHatEnterprise | CentOS | Rocky | RockyLinux)
+        # Check if version is 7.3 or higher for the '-r' (reboot) flag support
         if [ $(bc <<< "$LSBR_DISTRRN >= 7.3") -ne 0 ]; then
+            # Check if a full reboot is required
             NEEDREBOOT=$(needs-restarting -r 2>&1)
             RC_NEEDREBOOT=$?
 
+            # Check which specific services need a restart
             if [ -n "${EXCLUDE}" ]; then
-                NEEDSRVRESTART=$(sudo needs-restarting -s 2>&1 | egrep -v "${EXCLUDE}")
+                NEEDSRVRESTART=$(sudo needs-restarting -s 2>&1 | egrep -vE "${EXCLUDE}")
                         else
                 NEEDSRVRESTART=$(sudo needs-restarting -s 2>&1)
             fi
 
         else
+            # Older RHEL/CentOS 6/7.x logic (pre 7.3)
             if [ -n "${EXCLUDE}" ]; then
-                NEEDSRVRESTART=$(sudo needs-restarting 2>&1 | egrep -v "${EXCLUDE}")
+                NEEDSRVRESTART=$(sudo needs-restarting 2>&1 | egrep -vE "${EXCLUDE}")
                         else
                 NEEDSRVRESTART=$(sudo needs-restarting 2>&1)
             fi
@@ -184,28 +189,33 @@ case $LSBR_DISTRID in
         fi
         ;;
     *)
-      echo "UNKNOWN: $LSBR_DISTRID not yet supported by this plugin. Coming soon !"
+      echo "UNKNOWN: Linux distribution '$LSBR_DISTRID' not yet supported by this plugin."
       exit $STATE_UNKNOWN
       ;;
 esac
 
+# --- 7. OUTPUT GENERATION ---
+
+# Filter out Subscription Manager noise if it exists in the output
+NEEDREBOOT=$(echo "$NEEDREBOOT" | grep -v "Subscription Management")
+NEEDSRVRESTART=$(echo "$NEEDSRVRESTART" | grep -v "Subscription Management")
+
 if [ "${RC_NEEDREBOOT}" != "0" ]; then
     MSG_WARN="${MSG_WARN} Core libraries or services have been updated, reboot is required."
-    EXTRA_WARN="${EXTRA_WARN}
-$NEEDREBOOT"
+    EXTRA_WARN="${EXTRA_WARN}\n--- Reboot Required ---\n$NEEDREBOOT"
     STATUS=$STATE_WARNING
 fi
 
-if [ -n  "${NEEDSRVRESTART}" ]; then
-    MSG_WARN="${MSG_WARN} Some services need to be restarted."
-    EXTRA_WARN="${EXTRA_WARN}
-Services that need to be restarted:
-${NEEDSRVRESTART}"
+if [ -n "${NEEDSRVRESTART}" ] && [[ ! "${NEEDSRVRESTART}" =~ "No processes" ]]; then
+    MSG_WARN="${MSG_WARN} Services need restart."
+    EXTRA_WARN="${EXTRA_WARN}\n--- Services to restart ---\n${NEEDSRVRESTART}"
     STATUS=$STATE_WARNING
 fi
 
 if [ $STATUS -eq 1 ]; then
-    echo "WARNING: ${MSG_WARN}|${EXTRA_WARN}"
+    # Clean up leading spaces and print
+    MSG_WARN=$(echo $MSG_WARN | xargs)
+    echo -e "WARNING: ${MSG_WARN} | ${EXTRA_WARN}"
 else
     echo "OK: No processes need to be restarted, no reboot required";
 fi
