@@ -19,6 +19,8 @@
 # HISTORY :
 #     Release   |     Date      |    Authors    |       Description
 # --------------+---------------+---------------+------------------------------------------
+#       1.1.4   |    16.02.26   | Y. Charton    | Added RockyLinux as supported distribution
+# --------------+---------------+---------------+------------------------------------------
 #       1.1.3   |    13.02.26   | Y. Charton    | Added the "new" possible LSBR_DISTRIB 
 #               |               |               | variable value for RHEL
 # --------------+---------------+---------------+------------------------------------------
@@ -49,7 +51,7 @@ STATUS=$STATE_OK
 
 # Plugin variable description
 PROGNAME=$(basename $0)
-RELEASE="Revision 1.1.3"
+RELEASE="Revision 1.1.4"
 AUTHOR="by Yannick Charton"
 
 # Other variables
@@ -136,7 +138,7 @@ esac
 
 
 case $LSBR_DISTRID in
-    RedHatEnterpriseServer | RedHatEnterprise | CentOS)
+    RedHatEnterpriseServer | RedHatEnterprise | CentOS | RockyLinux)
         if [ $(bc <<< "$LSBR_DISTRRN >= 7.3") -ne 0 ]; then
             NEEDREBOOT=$(needs-restarting -r 2>&1)
             RC_NEEDREBOOT=$?
